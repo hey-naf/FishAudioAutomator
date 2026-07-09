@@ -1,0 +1,207 @@
+Fish Audio Automator Changelog
+=============================
+
+Version 2.2.3 (2026-07-09)
+--------------------------
+- [UI/UX] Added a beautiful, subtle pulsing glow animation (`connectedDotPulse`) to the connection status badge's green indicator dot to visually represent active connection heartbeat.
+
+Version 2.2.2 (2026-07-09)
+--------------------------
+- [UI/UX] Added an inline glowing green status dot to the left of the "Connected" / "Connected (BG)" text inside the connection status badge for enhanced visual feedback.
+
+Version 2.2.1 (2026-07-09)
+--------------------------
+- [Revert] Reverted renaming format back to using `_Part_` keyword (`<prefix>_Part_<index>.<ext>`) to ensure downstream workflow compatibility and prevent renaming failures.
+
+Version 2.2.0 (2026-07-09)
+--------------------------
+- [Feature] Updated file renaming template format to output `<prefix>_<index>.<ext>` (e.g. `Hook_001.mp3`) instead of `<prefix>_Part_<index>.<ext>` by removing the redundant `_Part` keyword in `background.js`.
+
+Version 2.1.9 (2026-07-09)
+--------------------------
+- [UI/UX] Added a beautiful, subtle breathing green glow animation (`btnSuccessGlow`) to the Completed button state to emphasize success states visually.
+
+Version 2.1.8 (2026-07-09)
+--------------------------
+- [UI/UX] Constrained credits sync requests by introducing a `shouldRequestCredits` parameter inside `checkTabStatus()` in `popup.js`, ensuring that typing in the text area or changing configurations does not trigger duplicate background click-scans.
+- [UI/UX] Restricted background click-scans to strictly fire ONLY on extension startup/open, page connection, page reload, and batch generation completion.
+
+Version 2.1.7 (2026-07-09)
+--------------------------
+- [UI/UX] Removed the red-blue breathing gradient animation (`warning-active`) from the "Start Automation" button to keep the interface clean; the warnings display card is sufficient.
+- [UI/UX] Added an active listener in the background worker script (`background.js`) to capture `creditsUpdate` events when the popup is closed, storing the balance securely in local storage so that reloading the page updates the balance even if the Side Panel is closed.
+
+Version 2.1.6 (2026-07-09)
+--------------------------
+- [UI/UX] Made the background programmatic credits click-scan completely invisible by injecting a CSS layout style rule that hides poppers (`opacity: 0 !important; transform: scale(0) !important;`) while the `.fish-automator-scanning` class is active on the HTML document during the 150ms scan lifecycle.
+- [UI/UX] Constrained programmatic click-scanning triggers to ONLY run when the automation queue is NOT processing chunks (e.g. at page load, popup connection, and batch completion), preventing dropdown flashing/flickering during generation.
+
+Version 2.1.5 (2026-07-09)
+--------------------------
+- [UI/UX] Enhanced trigger simulation to specify primary mouse left-click button parameters (`button: 0`, `buttons: 1`) inside the simulated PointerEvent and MouseEvent event dispatches, resolving triggers on strict React UI targets.
+
+Version 2.1.4 (2026-07-09)
+--------------------------
+- [UI/UX] Added a fallback `MutationObserver` on `document.body` that automatically triggers a credit sync as soon as the profile dropdown menu is rendered or mutated on the webpage DOM, ensuring real-time balance tracking.
+- [UI/UX] Switched the dropdown trigger simulation to dispatch a comprehensive sequence of `PointerEvent` and `MouseEvent` (pointerdown, mousedown, pointerup, mouseup, click) to satisfy React / Radix UI event listeners which trigger on mouse down.
+- [Bug Fix] Refactored `getProfileTrigger()` to crawl up the DOM hierarchy starting from the avatar image and match the exact outer dropdown wrapper element.
+
+Version 2.1.3 (2026-07-09)
+--------------------------
+- [UI/UX] Added an invisible programmatic background scan routine (`autoScanCredits`) that automatically triggers on page connection or page refresh. This clicks the profile avatar, queries the dynamically loaded dropdown structure, updates the credits balance in storage, and closes it again immediately (in less than 150ms) to sync the credits fully automatically without the user having to manually click the profile menu.
+- [UI/UX] Enhanced span search selectors to verify `title` attributes in addition to raw text content when parsing credit fractions in the DOM.
+
+Version 2.1.2 (2026-07-09)
+--------------------------
+- [Bug Fix] Resolved issue where the credits badge was hidden by fixing `updateCreditsDisplay()` which overrode visibility settings by setting `display = 'none'` when `currentCredits` was null. The credits badge visibility is now solely controlled by the connection state tracker (`checkTabStatus()`), making the badge always display as `Credits: --` when connected until a balance sync succeeds.
+
+Version 2.1.1 (2026-07-09)
+--------------------------
+- [UI/UX] Optimized `checkCredits` selector logic to directly match the HTML pattern of the team-switcher credit fractions (`span[class*="team-switcher"]` or matching `/^\d+[\d,]*\/\d+[\d,]*$/` format).
+- [UI/UX] Configured the Credits status badge to remain visible as `Credits: --` upon tab connection and added an interactive click listener that guides the user on how to manually trigger a sync if needed.
+
+Version 2.1.0 (2026-07-09)
+--------------------------
+- [UI/UX] Added a discrete Credits display badge at the top of the popup (`Credits: 2000`). If the current batch's total character count exceeds the remaining credit balance, the credits badge breathes fast and glows red, and the "Start Automation" button plays a smooth "blue-to-red and red-to-blue" transition animation.
+- [UI/UX] Implemented a green "Completed!" success state. When a script finishes successfully, the status dots remain green, and the button transitions to a green "Completed!" state. The button reverts to "Start Automation" and dots turn grey only when clicked, or when the user makes changes to inputs, uploads, parameters, or chunk items.
+- [Bug Fix] Trigger a native browser `alert()` pop-up on credit errors so that the user is immediately notified even if the Side Panel is minimized or out of focus.
+- [Bug Fix] If generation is blocked by the website's plan upgrade/limit modal, the extension stops immediately and leaves the modal open for the user to see, rather than closing it automatically.
+
+Version 2.0.5 (2026-07-09)
+--------------------------
+- [Bug Fix] Aligned the automation progress indicator percentage in `popup.js` to increment based on the count of *previously completed* chunks. The progress bar now correctly stays visible at less than 100% (e.g., 67% on the final chunk of 3) during the final chunk's generation and download.
+- [Bug Fix] Added a 5-second completion delay *after* the final download button is triggered before sending the 100% completion message, ensuring the background script has finished intercepting and renaming the last file before the UI resets.
+
+Version 2.0.4 (2026-07-09)
+--------------------------
+- [Bug Fix] Preserved renaming configuration in local storage when automation completes by removing the automatic storage wiping instruction in `resetUI` (popup.js). The renaming configuration stays active continuously so that the last file (regardless of download delays) is renamed correctly. The state is only cleared when the user clicks the "Stop" button, the "Dustbin/Clear" workspace button, or starts a new script.
+
+Version 2.0.3 (2026-07-09)
+--------------------------
+- [Bug Fix] Delayed the final progress completion message along with the 10-second `clearPrefix` timeout inside `content.js`. This prevents `popup.js` from calling `resetUI()` and prematurely clearing the storage before the last download can start and resolve its filename.
+- [Feature] Implemented a low credits warning banner in the popup interface that automatically alerts the user if remaining account credits fall below 500.
+- [Bug Fix] Implemented dynamic page-level error scans for credit exhaust warnings ("insufficient credits", "limit reached", etc.) on fish.audio to halt the execution immediately with a clear description if generation is blocked.
+
+Version 2.0.2 (2026-07-09)
+--------------------------
+- [Bug Fix] Resolved race condition on last chunk download renaming by delaying `clearPrefix` by 10 seconds inside `content.js` when execution completes. This ensures that the last download process has fully initialized and had its filename determined before the background worker cleans the active prefix state.
+
+Version 2.0.1 (2026-07-09)
+--------------------------
+- [Bug Fix] Resolved sporadic renaming failures on subsequent chunks. Refactored the background download listener to track state variables (`downloadPrefix`, `downloadCounter`, and `automationActive`) in synchronous local service worker memory, allowing instant, non-blocking suggestions that bypass Chrome's filename determination timeouts.
+
+Version 2.0.0 (2026-07-09)
+--------------------------
+- [Bug Fix] Resolved double-download bug by refactoring the pointer/mouse event simulation inside `content.js` to dispatch a single click event to the target element (removing the duplicate synthetic click dispatch).
+- [UI/UX] Made "Auto-Rename Downloads" turned ON (checked) by default so renaming functions immediately out of the box.
+- [Bug Fix] Expanded file name interception in `background.js` to match any audio files downloaded while automation is active, bypassing URL/CDN domain checks.
+- [Feature] Updated the workspace dustbin/clear button (🗑️) to reset all storage, file buffers, and download counters, completely cleaning up the browser local storage state.
+
+Version 1.9.9 (2026-07-09)
+--------------------------
+- [Bug Fix] Fixed early click bug where download buttons were triggered before the audio generation completes. The automation now explicitly tracks the disabled state of the download button and waits until the button is fully enabled and active (`disabled` and `aria-disabled` attributes are removed) before firing the download click events.
+
+Version 1.9.8 (2026-07-09)
+--------------------------
+- [Bug Fix] Implemented a simulated pointer/mouse event click sequence on the download button. This guarantees compatibility with modern JS UI frameworks (e.g. React/Radix) that listen to pointer/mouse actions rather than standard `.click()` triggers.
+- [Bug Fix] Implemented language-agnostic, multi-attribute download button scanning to support localized page views (detects aria-labels, titles, text contents, and SVG graphics dynamically).
+- [Feature] Added safe cooldown intervals (increased generation check poll time to 1.5s, post-generation stabilization to 2s, and inter-chunk delay to 5s) to pace requests naturally and prevent page/IP rate limit flagging.
+
+Version 1.9.7 (2026-07-09)
+--------------------------
+- [Bug Fix] Refactored `fillText` using native browser `document.execCommand('insertText')` text entry simulation. This ensures text injected programmatically correctly registers inside ProseMirror/TipTap rich text editor state (used by Fish Audio website) and triggers React/Vue reactive re-renders.
+- [Bug Fix] Made selectors more robust by automatically identifying alternative editors (`.ProseMirror`, `[contenteditable="true"]`, or `textarea`) and alternative button labels ("Synthesize", "Create").
+
+Version 1.9.6 (2026-07-09)
+--------------------------
+- [UI/UX] Changed the default color of the SVG trash can icon to soft grey (`var(--text-secondary)`). Set it to turn red (`var(--color-danger)`) on hover to indicate a destructive clear action dynamically.
+
+Version 1.9.5 (2026-07-09)
+--------------------------
+- [UI/UX] Replaced the Unicode trash emoji (🗑️) with a custom, sleek outline SVG vector icon to match premium dark Apple-style aesthetics.
+
+Version 1.9.4 (2026-07-09)
+--------------------------
+- [Feature] Added a red trash/dustbin icon (🗑️) inside the Text Input header card with a subtle CSS breathing animation effect. Clicking it clears the text box, clears current chunks, and resets the preview list dynamically.
+
+Version 1.9.3 (2026-07-09)
+--------------------------
+- [UI/UX] Renamed "Quick Try" tab to "Text Input" and swapped the layout display order (Text Input is now on the left, File Upload is on the right).
+- [UI/UX] Set "Text Input" as the default active tab on load, and configured "Smart Chapter Split" as the default active splitting mode.
+
+Version 1.9.1 (2026-07-09)
+--------------------------
+- [UI/UX] Removed the 🎣 emoji icon from the extension header in popup.html to create a cleaner header appearance.
+
+Version 1.9.0 (2026-07-09)
+--------------------------
+- [Feature] Added Smart Chapter Splitting: automatically segments chapters into 300-450 character chunks at sentence boundaries (periods, question marks, exclamation marks, or paragraph line breaks) to guarantee safe generation.
+- [Feature] Interactive Chunk Deletion: added a red delete button (✕) to each chunk preview item. Users can now "cross out" and remove individual chunks from the active queue before starting.
+- [UI/UX] Added a "Text Splitting Mode" setting in the options panel to toggle between "3 Blank Lines" (legacy/pre-split) and "Smart Chapter Split" (auto-splitting).
+- [Persistence] Stored splitting mode preference and custom deleted text lists in local storage so they persist across sidepanel reloads.
+
+Version 1.8.2 (2026-07-09)
+--------------------------
+- [UI/UX] Made the chunk preview list box vertically resizable by dragging, allowing users to adjust its height freely (min 100px, max 400px).
+- [Bug Fix] Excluded height/width from `.input-field` transitions in CSS. This resolves the choppy/stepped resizing lag on the Quick Try text box and makes resizes butter-smooth.
+
+Version 1.8.1 (2026-07-09)
+--------------------------
+- [UI/UX] Added a stats summary header above the chunk list showing the total character count of the loaded script (e.g. "Total chars: 14,250") for both File Upload and Quick Try tabs.
+
+Version 1.8.0 (2026-07-09)
+--------------------------
+- [Feature] Added support for Markdown (.md) and Word (.docx) files in the File Upload tab.
+- [Feature] Embedded the Mammoth.js parser locally, allowing client-side text extraction from binary .docx files inside the browser extension sandbox.
+- [UI/UX] Updated the upload file accept filters and user-facing badges to explicitly support .txt, .md, and .docx formats.
+
+Version 1.7.4 (2026-07-09)
+--------------------------
+- [UI/UX] Made the Quick Try script textarea vertically resizable by dragging, allowing users to customize its height directly.
+
+Version 1.7.3 (2026-07-09)
+--------------------------
+- [Feature] Added background tab automation tracking: the side panel now stores and tracks the running tab ID, allowing progress to update in real time even when you switch browser tabs.
+- [UI/UX] Added dynamic header connection status updates ("Connected" vs "Connected (BG)") when switching between active and inactive background automation tabs.
+- [Feature] Implemented target tab message routing: controls (Pause, Resume, Stop) now send commands directly to the tab running the automation, ensuring actions work seamlessly from any browser view.
+
+Version 1.7.2 (2026-07-09)
+--------------------------
+- [Bug Fix] Added "host_permissions" for "https://fish.audio/*" to manifest.json. This fixes the "Not connected" issue inside the Chrome Side Panel by granting permission to inspect the URL of the active tab.
+
+Version 1.7.1 (2026-07-09)
+--------------------------
+- [UI/UX] Added the extension version number ("v1.7.1") next to the title in the header for clear version visibility.
+
+Version 1.7.0 (2026-07-09)
+--------------------------
+- [Feature] Added Segmented Tab Control (📁 File Upload and 📝 Quick Try) inside the side panel to toggle input modes.
+- [Feature] Added "Quick Try" direct script input mode: a persistent 250px-high text area that allows you to type/paste scripts directly and parses them in real time into chunks. Text content is autosaved to storage.
+- [Feature] Redesigned the download renaming format. Changed the separator to space-dash-space (" - ") and restricted indices to 2 digits (e.g. "Hook - 01.mp3", "Hook - 02.mp3") as requested.
+
+Version 1.6.0 (2026-07-09)
+--------------------------
+- [Feature] Migrated the extension interface to the Chrome Side Panel API. Clicking the toolbar icon now opens a persistent side panel that stays open while you navigate or click elsewhere in the browser.
+- [UI/UX] Optimized layout widths and padding to be fully responsive for side panel views.
+- [UI/UX] Redesigned the "Choose script file" upload card to be shorter, positioning the folder icon inline to the left of the button text and increasing its scale for enhanced visibility.
+
+Version 1.5.1 (2026-07-09)
+--------------------------
+- [Bug Fix] Fixed Auto-Renaming failure by matching both item.url and item.referrer (blob URLs on fish.audio have empty referrers).
+- [Bug Fix] Added an 'automationActive' check to ensure rename operations are strictly scoped to running automation, preventing accidental renaming of manual downloads.
+- [Optimization] Implemented popup UI state sync. Reopening the popup now queries the tab for active progress, restoring the list highlights, progress bar, and play controls in real time.
+
+Version 1.5 (2026-07-09)
+------------------------
+- [UI/UX] Redesigned popup interface with a premium, Apple-inspired dark/translucent style using Google Inter typography.
+- [UI/UX] Added an interactive chunk preview list that highlights text segments and displays character counts.
+- [UI/UX] Added real-time character limit warnings (red highlights for chunks over 500 characters) before running.
+- [Feature] Implemented Pause, Resume, and Stop controls to manage long-running automations.
+- [Feature] Added settings panel for Auto-Naming generated files with custom prefixes (e.g. MyProject_Part_001.mp3) using a background service worker.
+- [Feature] Integrated live tab-connection tracking badge in the header.
+- [Optimization/Bug Fix] Replaced the fixed 15-second generation wait time with dynamic DOM polling. The automator now clicks download the moment a new audio file download button is generated, speeding up automation for short scripts and preventing failures on longer generations.
+- [Optimization/Bug Fix] Added automatic dialog close/retry handlers for characters limit/upgrade popup notices.
+
+Version 1.0 (Previous)
+----------------------
+- Initial release with basic 3-newline text splitting logic, hardcoded 15-second generation delays, and manual page download triggering.
